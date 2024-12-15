@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ эмоции</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #4A90E2;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styling */
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        label {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: block;
+            color: #333;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            font-size: 1em;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #4A90E2;
+        }
+
+        button {
+            background-color: #7ED321;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5ba514;
+        }
+
+        button:disabled {
+            background-color: #b6d8a2;
+            cursor: not-allowed;
+        }
+
+        /* Audio player styling */
+        audio {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.6em;
+            }
+
+            form {
+                width: 100%;
+                padding: 15px;
+            }
+
+            input[type="file"], button {
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Загрузите аудиофайл для анализа эмоции</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <label for="audio">Загрузите аудиофайл:</label>
+        <input type="file" name="audio" id="audio" accept="audio/*" required onchange="previewAudio()">
+        
+        <button type="submit">Анализировать эмоцию</button>
+    </form>
+
+    <!-- Audio preview player -->
+    <audio id="audio-player" controls style="display:none;">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        function previewAudio() {
+            var audioFile = document.getElementById('audio').files[0];
+            var audioPlayer = document.getElementById('audio-player');
+
+            if (audioFile) {
+                var objectURL = URL.createObjectURL(audioFile);
+                audioPlayer.src = objectURL;
+                audioPlayer.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>  
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ эмоции</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #4A90E2;
+            margin-bottom: 20px;
+        }
+
+        /* Button Styling */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:disabled {
+            background-color: #b6d8a2;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        /* Audio Playback Styling */
+        audio {
+            margin-top: 20px;
+            max-width: 100%;
+            width: 300px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Center the content */
+        .container {
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Анализ эмоции с помощью записи голоса</h1>
+
+        <button id="startRecording">Начать запись</button>
+        <button id="stopRecording" disabled>Остановить запись</button>
+        <audio id="audioPlayback" controls style="display:none;"></audio>
+
+        <form id="audioForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="audio" id="audioInput" hidden>
+            <button type="submit" id="analyzeButton" disabled>Анализировать эмоцию</button>
+        </form>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById("startRecording").onclick = async function () {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioChunks = [];
+                
+                const audioUrl = URL.createObjectURL(audioBlob);
+                document.getElementById("audioPlayback").src = audioUrl;
+                document.getElementById("audioPlayback").style.display = "block";
+                
+                const fileInput = document.getElementById("audioInput");
+                const file = new File([audioBlob], "recording.wav", { type: 'audio/wav' });
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                fileInput.files = dataTransfer.files;
+                
+            
+                document.getElementById("analyzeButton").disabled = false;
+            };
+
+            mediaRecorder.start();
+            document.getElementById("startRecording").disabled = true;
+            document.getElementById("stopRecording").disabled = false;
+        };
+
+        document.getElementById("stopRecording").onclick = () => {
+            mediaRecorder.stop();
+            document.getElementById("startRecording").disabled = false;
+            document.getElementById("stopRecording").disabled = true;
+        };
+    </script>
+</body>
+</html> 
+ {% endcomment %}

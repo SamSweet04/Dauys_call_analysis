@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Результаты анализа эмоции</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f3f6fa;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Container for results */
+        .results-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #3A76D4;
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Dynamic styles for emotions */
+        .anger {
+            color: red;
+        }
+
+        .joy {
+            color: green;
+        }
+
+        .calm {
+            color: #8fbc8f;
+        }
+
+        .neutral {
+            color: #808080;
+        }
+
+        /* Chart styling */
+        .chart-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .chart-container canvas {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="results-container">
+    <h2 class="{{ emotion|lower }}">{{ emotion }}</h2>
+    <p class="{{ confidence_class }}">Уровень уверенности: {{ confidence }}%</p>
+    <p class="{{ acoustic_emotion|lower }}">Акустическая эмоция: {{ acoustic_emotion }}</p>
+    <p class="{{ text_emotion|lower }}">Эмоция из текста: {{ text_emotion }}</p>
+    
+    <!-- Display the original recognized text -->
+    <p><strong>Исходный текст:</strong> {{ original_text }}</p>
+
+    <!-- Chart Section -->
+    <div class="chart-container">
+        <!-- Pie Chart for Emotion Breakdown -->
+        <div>
+            <canvas id="emotionChart"></canvas>
+        </div>
+
+        <!-- Bar Chart for Confidence Level -->
+        <div>
+            <canvas id="confidenceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Emotion Breakdown Chart
+    const emotionData = {
+        labels: ['Acoustic Emotion', 'Text Emotion'],
+        datasets: [{
+            label: 'Emotion Distribution',
+            data: [
+                {% if acoustic_emotion == 'Anger' %} 50,
+                {% elif acoustic_emotion == 'Calm/Satisfaction' %} 30,
+                {% else %} 20,
+                {% endif %}
+                {% if text_emotion == 'anger' %} 50,
+                {% elif text_emotion == 'joy' %} 30,
+                {% else %} 20,
+                {% endif %}
+            ],
+            backgroundColor: ['#FF6384', '#36A2EB'],
+            hoverOffset: 4
+        }]
+    };
+
+    const emotionConfig = {
+        type: 'pie',
+        data: emotionData,
+        options: {
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Emotion Distribution'
+                }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('emotionChart'),
+        emotionConfig
+    );
+
+    // Confidence Level Bar Chart
+    const confidenceData = {
+        labels: ['Confidence Level'],
+        datasets: [{
+            label: 'Confidence (%)',
+            data: [{{ confidence }} * 100],
+            backgroundColor: ['#4CAF50'],
+            borderColor: ['#3e8e41'],
+            borderWidth: 1
+        }]
+    };
+
+    const confidenceConfig = {
+        type: 'bar',
+        data: confidenceData,
+        options: {
+            indexAxis: 'y',
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Confidence Level (%)' }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('confidenceChart'),
+        confidenceConfig
+    );
+</script>
+
+</body>
+</html>
